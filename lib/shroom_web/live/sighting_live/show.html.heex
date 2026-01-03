@@ -1,0 +1,102 @@
+<.header>
+  Sighting Details
+  <:subtitle>Fungi sighting recorded on <%= Calendar.strftime(@sighting.sighted_at, "%B %d, %Y at %H:%M") %></:subtitle>
+  <:actions>
+    <.link patch={~p"/sightings/#{@sighting}/edit"}>
+      <.button>Edit</.button>
+    </.link>
+    <.link phx-click={JS.push("delete", value: %{id: @sighting.id})} data-confirm="Are you sure?">
+      <.button class="!bg-red-600 hover:!bg-red-700">Delete</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.back navigate={~p"/sightings"}>Back to sightings</.back>
+
+<div class="mt-8">
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <%= if length(@sighting.photos) > 0 do %>
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">
+          Photos (<%= length(@sighting.photos) %>)
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <%= for photo <- @sighting.photos do %>
+            <div class="relative group">
+              <img
+                src={~p"/photos/#{photo.id}"}
+                alt={photo.filename || "Fungi photo"}
+                class="w-full h-auto object-contain rounded-lg shadow-lg"
+              />
+              <%= if photo.caption do %>
+                <p class="mt-2 text-sm text-gray-600"><%= photo.caption %></p>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+      <dl class="sm:divide-y sm:divide-gray-200">
+        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Fungi Name</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <%= @sighting.fungi_name || "Unknown" %>
+          </dd>
+        </div>
+
+        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Location Name</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <%= @sighting.location_name || "N/A" %>
+          </dd>
+        </div>
+
+        <%= if @sighting.location do %>
+          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Coordinates</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <%= elem(@sighting.location.coordinates, 1) %>, <%= elem(
+                @sighting.location.coordinates,
+                0
+              ) %>
+            </dd>
+          </div>
+        <% end %>
+
+        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">Sighted At</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+            <%= Calendar.strftime(@sighting.sighted_at, "%Y-%m-%d %H:%M") %>
+          </dd>
+        </div>
+
+        <%= if @sighting.notes do %>
+          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Notes</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <%= @sighting.notes %>
+            </dd>
+          </div>
+        <% end %>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<.modal
+  :if={@live_action == :edit}
+  id="sighting-modal"
+  show
+  on_cancel={JS.patch(~p"/sightings/#{@sighting}")}
+>
+  <.live_component
+    module={ShroomWeb.SightingLive.FormComponent}
+    id={@sighting.id}
+    title="Edit Sighting"
+    action={@live_action}
+    sighting={@sighting}
+    patch={~p"/sightings/#{@sighting}"}
+  />
+</.modal>

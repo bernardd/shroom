@@ -1,0 +1,155 @@
+<.header>
+  Fungi Sightings
+  <:actions>
+    <.link patch={~p"/sightings/new"}>
+      <.button>New Sighting</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<div class="mt-8">
+  <.simple_form for={%{}} phx-submit="search">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <.input
+        type="text"
+        name="search[fungi_name]"
+        label="Fungi Name"
+        value={@search_params["fungi_name"]}
+        placeholder="Search by fungi name..."
+      />
+      <.input
+        type="text"
+        name="search[location_name]"
+        label="Location"
+        value={@search_params["location_name"]}
+        placeholder="Search by location..."
+      />
+      <div>
+        <label class="block text-sm font-semibold leading-6 text-zinc-900 mb-1">&nbsp;</label>
+        <.button type="submit" class="w-full">Search</.button>
+      </div>
+    </div>
+  </.simple_form>
+</div>
+
+<div class="mb-4 flex justify-between items-center">
+  <div class="text-sm text-zinc-600">
+    Showing <%= (@page - 1) * @per_page + 1 %> to <%= min(@page * @per_page, @total_entries) %> of <%= @total_entries %> sightings
+  </div>
+  <form phx-change="change_per_page" class="flex items-center gap-2">
+    <label class="text-sm text-zinc-900">Items per page:</label>
+    <select name="per_page" value={@per_page} class="select select-sm">
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </select>
+  </form>
+</div>
+
+<.table id="sightings" rows={@sightings} row_click={&JS.navigate(~p"/sightings/#{&1}")}>
+  <:col :let={sighting} label="Photos">
+    <%= if length(sighting.photos) > 0 do %>
+      <div class="flex gap-1">
+        <%= for photo <- Enum.take(sighting.photos, 2) do %>
+          <img src={~p"/photos/#{photo.id}"} alt="Fungi photo" class="h-16 w-16 object-cover rounded" />
+        <% end %>
+        <%= if length(sighting.photos) > 2 do %>
+          <div class="h-16 w-16 bg-gray-200 rounded flex items-center justify-center text-gray-600 text-sm">
+            +<%= length(sighting.photos) - 2 %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="h-16 w-16 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+        No photos
+      </div>
+    <% end %>
+  </:col>
+  <:col :let={sighting} label="Fungi Name">
+    <%= sighting.fungi_name || "Unknown" %>
+  </:col>
+  <:col :let={sighting} label="Location">
+    <%= sighting.location_name || "N/A" %>
+  </:col>
+  <:col :let={sighting} label="Sighted At">
+    <%= if sighting.sighted_at do %>
+      <%= Calendar.strftime(sighting.sighted_at, "%Y-%m-%d %H:%M") %>
+    <% end %>
+  </:col>
+  <:action :let={sighting}>
+    <.link navigate={~p"/sightings/#{sighting}"}>Show</.link>
+  </:action>
+  <:action :let={sighting}>
+    <.link patch={~p"/sightings/#{sighting}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={sighting}>
+    <.link phx-click={JS.push("delete", value: %{id: sighting.id})} data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<div class="mt-4 flex justify-center">
+  <div class="join">
+    <button
+      class="join-item btn btn-sm"
+      phx-click="paginate"
+      phx-value-page="1"
+      disabled={@page == 1}
+    >
+      First
+    </button>
+    <button
+      class="join-item btn btn-sm"
+      phx-click="paginate"
+      phx-value-page={@page - 1}
+      disabled={@page == 1}
+    >
+      Previous
+    </button>
+
+    <%= for page_num <- max(1, @page - 2)..min(@total_pages, @page + 2) do %>
+      <button
+        class={["join-item btn btn-sm", @page == page_num && "btn-active"]}
+        phx-click="paginate"
+        phx-value-page={page_num}
+      >
+        <%= page_num %>
+      </button>
+    <% end %>
+
+    <button
+      class="join-item btn btn-sm"
+      phx-click="paginate"
+      phx-value-page={@page + 1}
+      disabled={@page == @total_pages}
+    >
+      Next
+    </button>
+    <button
+      class="join-item btn btn-sm"
+      phx-click="paginate"
+      phx-value-page={@total_pages}
+      disabled={@page == @total_pages}
+    >
+      Last
+    </button>
+  </div>
+</div>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="sighting-modal"
+  show
+  on_cancel={JS.patch(~p"/sightings")}
+>
+  <.live_component
+    module={ShroomWeb.SightingLive.FormComponent}
+    id={@sighting.id || :new}
+    title={@page_title}
+    action={@live_action}
+    sighting={@sighting}
+    patch={~p"/sightings"}
+  />
+</.modal>
