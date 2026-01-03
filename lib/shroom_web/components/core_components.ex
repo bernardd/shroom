@@ -318,10 +318,10 @@ defmodule ShroomWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-900">
+        <h1 class="text-3xl font-bold leading-8 text-zinc-100">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-sm text-zinc-600">
+        <p :if={@subtitle != []} class="text-sm text-zinc-400">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -591,7 +591,7 @@ defmodule ShroomWeb.CoreComponents do
     <div class="mt-16">
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+        class="text-sm font-semibold leading-6 text-zinc-100 hover:text-zinc-300"
       >
         <.icon name="hero-arrow-left-solid" class="size-3" />
         {render_slot(@inner_block)}

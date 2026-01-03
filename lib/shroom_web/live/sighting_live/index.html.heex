@@ -33,12 +33,12 @@
 </div>
 
 <div class="mb-4 flex justify-between items-center">
-  <div class="text-sm text-zinc-600">
+  <div class="text-sm text-zinc-400">
     Showing <%= (@page - 1) * @per_page + 1 %> to <%= min(@page * @per_page, @total_entries) %> of <%= @total_entries %> sightings
   </div>
-  <form phx-change="change_per_page" class="flex items-center gap-2">
-    <label class="text-sm text-zinc-900">Items per page:</label>
-    <select name="per_page" value={@per_page} class="select select-sm">
+  <form phx-change="change_per_page" class="flex items-center gap-2 flex-nowrap">
+    <label class="text-sm text-zinc-100 whitespace-nowrap">Items per page:</label>
+    <select name="per_page" value={@per_page} class="select select-sm flex-shrink-0">
       <option value="10">10</option>
       <option value="20">20</option>
       <option value="50">50</option>
@@ -109,7 +109,7 @@
       Previous
     </button>
 
-    <%= for page_num <- max(1, @page - 2)..min(@total_pages, @page + 2) do %>
+    <%= for page_num <- max(1, @page - 2)..min(@total_pages, @page + 2)//1 do %>
       <button
         class={["join-item btn btn-sm", @page == page_num && "btn-active"]}
         phx-click="paginate"
