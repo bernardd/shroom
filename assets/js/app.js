@@ -24,10 +24,181 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
+// Google Maps Hook
+const Hooks = {}
+
+Hooks.GoogleMap = {
+  mounted() {
+    this.initializeMap()
+
+    this.handleEvent("update_markers", ({sightings}) => {
+      this.updateMarkers(sightings)
+    })
+  },
+
+  initializeMap() {
+    const sightings = JSON.parse(this.el.dataset.sightings)
+
+    // Calculate center based on sightings
+    const center = this.calculateCenter(sightings)
+
+    // Initialize the map
+    this.map = new google.maps.Map(this.el, {
+      center: center,
+      zoom: 8,
+      styles: [
+        {
+          "elementType": "geometry",
+          "stylers": [{"color": "#212121"}]
+        },
+        {
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#757575"}]
+        },
+        {
+          "elementType": "labels.text.stroke",
+          "stylers": [{"color": "#212121"}]
+        },
+        {
+          "featureType": "administrative",
+          "elementType": "geometry",
+          "stylers": [{"color": "#757575"}]
+        },
+        {
+          "featureType": "administrative.country",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#9e9e9e"}]
+        },
+        {
+          "featureType": "administrative.locality",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#bdbdbd"}]
+        },
+        {
+          "featureType": "poi",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#757575"}]
+        },
+        {
+          "featureType": "poi.park",
+          "elementType": "geometry",
+          "stylers": [{"color": "#181818"}]
+        },
+        {
+          "featureType": "poi.park",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#616161"}]
+        },
+        {
+          "featureType": "poi.park",
+          "elementType": "labels.text.stroke",
+          "stylers": [{"color": "#1b1b1b"}]
+        },
+        {
+          "featureType": "road",
+          "elementType": "geometry.fill",
+          "stylers": [{"color": "#2c2c2c"}]
+        },
+        {
+          "featureType": "road",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#8a8a8a"}]
+        },
+        {
+          "featureType": "road.arterial",
+          "elementType": "geometry",
+          "stylers": [{"color": "#373737"}]
+        },
+        {
+          "featureType": "road.highway",
+          "elementType": "geometry",
+          "stylers": [{"color": "#3c3c3c"}]
+        },
+        {
+          "featureType": "road.highway.controlled_access",
+          "elementType": "geometry",
+          "stylers": [{"color": "#4e4e4e"}]
+        },
+        {
+          "featureType": "road.local",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#616161"}]
+        },
+        {
+          "featureType": "transit",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#757575"}]
+        },
+        {
+          "featureType": "water",
+          "elementType": "geometry",
+          "stylers": [{"color": "#000000"}]
+        },
+        {
+          "featureType": "water",
+          "elementType": "labels.text.fill",
+          "stylers": [{"color": "#3d3d3d"}]
+        }
+      ]
+    })
+
+    this.markers = []
+    this.updateMarkers(sightings)
+  },
+
+  calculateCenter(sightings) {
+    if (sightings.length === 0) {
+      return {lat: -37.8136, lng: 144.9631} // Melbourne, Australia default
+    }
+
+    const avgLat = sightings.reduce((sum, s) => sum + s.lat, 0) / sightings.length
+    const avgLng = sightings.reduce((sum, s) => sum + s.lng, 0) / sightings.length
+
+    return {lat: avgLat, lng: avgLng}
+  },
+
+  updateMarkers(sightings) {
+    // Clear existing markers
+    this.markers.forEach(marker => marker.setMap(null))
+    this.markers = []
+
+    // Add new markers
+    sightings.forEach(sighting => {
+      const marker = new google.maps.Marker({
+        position: {lat: sighting.lat, lng: sighting.lng},
+        map: this.map,
+        title: sighting.fungi_name,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#FF6B6B",
+          fillOpacity: 0.8,
+          strokeColor: "#fff",
+          strokeWeight: 2
+        }
+      })
+
+      marker.addListener("click", () => {
+        this.pushEvent("select_sighting", {id: sighting.id.toString()})
+      })
+
+      this.markers.push(marker)
+    })
+
+    // Adjust map bounds if there are sightings
+    if (sightings.length > 0) {
+      const bounds = new google.maps.LatLngBounds()
+      sightings.forEach(s => bounds.extend({lat: s.lat, lng: s.lng}))
+      this.map.fitBounds(bounds)
+    }
+  }
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
+  hooks: Hooks
 })
 
 // Show progress bar on live navigation and form submits

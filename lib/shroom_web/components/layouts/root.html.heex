@@ -10,6 +10,10 @@
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
+    <%= if api_key = Application.get_env(:shroom, :google_maps_api_key) do %>
+      <script async src={"https://maps.googleapis.com/maps/api/js?key=#{api_key}&callback=Function.prototype"}>
+      </script>
+    <% end %>
     <script>
       (() => {
         const setTheme = (theme) => {

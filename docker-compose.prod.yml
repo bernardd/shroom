@@ -47,6 +47,9 @@ services:
       # Release configuration
       RELEASE_COOKIE: "shroom_release_cookie_change_me"
 
+      # Google Maps API Key - IMPORTANT: Set this to your Google Maps API key
+      GMAPS_API_KEY: "${GMAPS_API_KEY:-}"
+
     ports:
       - "4001:4000"
     restart: unless-stopped

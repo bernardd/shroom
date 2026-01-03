@@ -24,6 +24,8 @@ defmodule ShroomWeb.Router do
     live "/sightings/:id", SightingLive.Show, :show
     live "/sightings/:id/show/edit", SightingLive.Show, :edit
 
+    live "/map", MapLive.Index, :index
+
     get "/photos/:id", PhotoController, :show
   end
 

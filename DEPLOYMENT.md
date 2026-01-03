@@ -101,6 +101,23 @@ For production deployment, update these environment variables in `docker-compose
 2. **RELEASE_COOKIE**: Change to a unique value
 3. **PHX_HOST**: Set to your domain name (e.g., `shroom.example.com`)
 4. **Database password**: Change `POSTGRES_PASSWORD` to a strong password
+5. **GMAPS_API_KEY**: Set your Google Maps API key (see below)
+
+#### Google Maps API Key Setup
+
+The map feature requires a Google Maps API key:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the "Maps JavaScript API"
+4. Create credentials (API Key)
+5. Set the environment variable:
+   ```bash
+   export GMAPS_API_KEY="your_api_key_here"
+   ```
+   Or add it to your `.env` file, or set it in `docker-compose.prod.yml`
+
+**Note**: The map feature will not work without a valid API key, but the rest of the application will function normally.
 
 ### Troubleshooting
 
@@ -178,3 +195,4 @@ If you prefer to deploy without Docker:
 | `PHX_SERVER` | Enable Phoenix server | No | true |
 | `PORT` | HTTP port | No | 4000 |
 | `RELEASE_COOKIE` | Erlang distribution cookie | No | - |
+| `GMAPS_API_KEY` | Google Maps API key for map feature | No | - |

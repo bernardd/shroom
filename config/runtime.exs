@@ -23,6 +23,9 @@ end
 config :shroom, ShroomWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+# Google Maps API Key configuration
+config :shroom, :google_maps_api_key, System.get_env("GMAPS_API_KEY")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

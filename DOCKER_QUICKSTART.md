@@ -20,6 +20,12 @@ SECRET_KEY_BASE: "CHANGE_ME_IN_PRODUCTION_USE_mix_phx_gen_secret_TO_GENERATE"
 
 With your generated key (keep it secret!).
 
+**Optional**: Set your Google Maps API key to enable the map feature:
+```yaml
+GMAPS_API_KEY: "your_google_maps_api_key"
+```
+(See DEPLOYMENT.md for details on getting an API key)
+
 ## Step 3: Start the Application
 
 ```bash

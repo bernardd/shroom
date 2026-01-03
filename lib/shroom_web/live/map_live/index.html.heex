@@ -1,0 +1,90 @@
+<.header>
+  Fungi Sightings Map
+  <:actions>
+    <.link navigate={~p"/sightings"}>
+      <.button>View List</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<div class="mt-8">
+  <div class="mb-4">
+    <form phx-change="filter" class="flex gap-2">
+      <input
+        type="text"
+        name="fungi_name"
+        value={@fungi_name_filter}
+        placeholder="Filter by fungi name..."
+        class="input input-bordered flex-1"
+      />
+      <button type="button" phx-click="filter" phx-value-fungi_name="" class="btn btn-outline">
+        Clear Filter
+      </button>
+    </form>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Map Container -->
+    <div class="lg:col-span-2">
+      <div
+        id="map"
+        phx-hook="GoogleMap"
+        phx-update="ignore"
+        data-sightings={Jason.encode!(serialize_sightings(@filtered_sightings))}
+        class="w-full h-[600px] rounded-lg shadow-lg"
+      >
+      </div>
+    </div>
+
+    <!-- Sighting Details Panel -->
+    <div class="lg:col-span-1">
+      <%= if @selected_sighting do %>
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <div class="flex justify-between items-start">
+              <h2 class="card-title text-zinc-100">{@selected_sighting.fungi_name}</h2>
+              <button phx-click="close_details" class="btn btn-ghost btn-sm btn-circle">
+                <.icon name="hero-x-mark" class="size-5" />
+              </button>
+            </div>
+
+            <div class="space-y-2 text-sm">
+              <div>
+                <span class="font-semibold text-zinc-300">Location:</span>
+                <span class="text-zinc-400">{@selected_sighting.location_name}</span>
+              </div>
+
+              <div>
+                <span class="font-semibold text-zinc-300">Sighted:</span>
+                <span class="text-zinc-400">
+                  {Calendar.strftime(@selected_sighting.sighted_at, "%B %d, %Y at %H:%M")}
+                </span>
+              </div>
+
+              <%= if @selected_sighting.notes do %>
+                <div>
+                  <span class="font-semibold text-zinc-300">Notes:</span>
+                  <p class="text-zinc-400 mt-1">{@selected_sighting.notes}</p>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="card-actions justify-end mt-4">
+              <.link navigate={~p"/sightings/#{@selected_sighting}"}>
+                <.button class="btn-sm">View Details</.button>
+              </.link>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div class="card bg-base-200 shadow-xl">
+          <div class="card-body">
+            <p class="text-zinc-400 text-center">
+              Click on a marker to view sighting details
+            </p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
