@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:14-3.2
+    container_name: shroom_postgres_prod
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: shroom_prod
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # For Windows: This maps to the user's home directory
+      # The path will be something like C:\Users\<username>\.shroom\postgres-data
+      - ${USERPROFILE}/.shroom/postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5454:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - shroom-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shroom_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database configuration
+      DATABASE_URL: "ecto://postgres:postgres@postgres:5432/shroom_prod"
+
+      # Phoenix configuration
+      PHX_HOST: localhost
+      PHX_SERVER: "true"
+      PORT: 4000
+
+      # Security - IMPORTANT: Change these in production!
+      SECRET_KEY_BASE: "JOFSKcMGW/pE/ZBzi4j9qaAuw5IgMy0NfCiH38Y9qqyJUBM4hYGWcc9+Kf2VJa1W"
+
+      # Release configuration
+      RELEASE_COOKIE: "shroom_release_cookie_change_me"
+
+    ports:
+      - "4001:4000"
+    restart: unless-stopped
+    networks:
+      - shroom-network
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 5 &&
+        echo 'Running migrations...' &&
+        /app/bin/migrate &&
+        echo 'Starting application...' &&
+        /app/bin/shroom start
+      "
+
+networks:
+  shroom-network:
+    driver: bridge

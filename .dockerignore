@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+
+# Mix artifacts
+/_build
+/deps
+*.ez
+
+# Generated on crash by the VM
+erl_crash.dump
+
+# Static artifacts - we'll rebuild these
+/assets/node_modules
+
+# Since we are building assets in the builder stage,
+# we can ignore priv/static but keep priv/repo for migrations
+/priv/static/
+
+# Ignore package manager files
+npm-debug.log
+.npm
+
+# Editor and OS files
+.DS_Store
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Test files
+/cover
+/test
+
+# Temporary files
+/tmp
+
+# Docker files
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+AGENTS.md
+
+# Development database
+/postgres_data
